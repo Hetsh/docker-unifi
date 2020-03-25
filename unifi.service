@@ -1,0 +1,25 @@
+[Unit]
+Description=UniFi Controller container
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=-/bin/docker create \
+			  --rm \
+			  --interactive \
+			  --name unifi \
+			  --publish 8080:8080/tcp \
+			  --publish 8443:8443/tcp \
+			  --publish 8880:8880/tcp \
+			  --publish 8843:8843/tcp \
+			  --publish 3478:3478/udp \
+			  --publish 6789:6789/tcp \
+			  --publish 10001:10001/udp \
+			  --mount type=bind,source=/etc/unifi,target=/etc/unifi \
+			  --mount type=bind,source=/etc/localtime,target=/etc/localtime,readonly \
+			  hetsh/unifi
+ExecStart=/bin/docker start --attach unifi
+ExecStop=/bin/docker stop unifi
+
+[Install]
+WantedBy=multi-user.target
