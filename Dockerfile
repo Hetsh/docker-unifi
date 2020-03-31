@@ -1,33 +1,34 @@
-FROM library/alpine:20200319
-RUN apk add --no-cache \
-    gitea=1.11.3-r0 \
-    openssh=8.2_p1-r0
+FROM library/debian:stretch-20200327-slim
+ENV DEBIAN_FRONTEND="noninteractive"
+RUN apt-get update && \
+    apt-get install --yes \
+        binutils=2.28-5 \
+        libcap2=1:2.25-1 \
+        curl=7.52.1-5+deb9u10 \
+        gnupg=2.1.18-8~deb9u4
+RUN mkdir "/usr/share/man/man1" && \
+    apt-get install --yes \
+        openjdk-8-jre-headless=8u242-b08-1~deb9u1 \
+        jsvc=1.0.15-7
+RUN curl -s -L "https://www.mongodb.org/static/pgp/server-3.4.asc" | apt-key add - && \
+    apt-get remove --yes gnupg && \
+    echo "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.4 main" >> /etc/apt/sources.list.d/mongodb-org-3.4.list && \
+    apt-get update && \
+    apt-get install --yes \
+        libssl1.0.2=1.0.2u-1~deb9u1 \
+        mongodb-org=3.4.24 \
+        mongodb-org-server=3.4.24 \
+        mongodb-org-shell=3.4.24 \
+        mongodb-org-mongos=3.4.24 \
+        mongodb-org-tools=3.4.24 && \
+    apt-get autoremove --yes && \
+    rm -r /var/lib/apt/lists /var/cache/apt
 
-# App user
-ARG APP_UID=1360
-ARG APP_USER="gitea"
-RUN addgroup --gid "$APP_UID" "$APP_USER" && \
-    sed -i "s|$APP_USER:x:100:101|$APP_USER:x:$APP_UID:$APP_UID|" "/etc/passwd"
+ARG UNIFI_DIR="/tmp"
+ARG UNIFI_PKG="unifi_sysvinit_all.deb"
+ARG UNIFI_VERSION=5.12.66
+ADD "https://dl.ubnt.com/unifi/$UNIFI_VERSION/$UNIFI_PKG" "$UNIFI_DIR/$UNIFI_PKG"
+RUN dpkg -i "$UNIFI_DIR/$UNIFI_PKG" && \
+    rm "$UNIFI_DIR/$UNIFI_PKG"
 
-# Configuration
-ARG CONF_DIR="/etc/gitea"
-RUN echo -e "[repository]\nSCRIPT_TYPE = sh\n\n[server]\nSTART_SSH_SERVER = true\nSSH_PORT = 3022\nSTATIC_ROOT_PATH = /usr/share/webapps/gitea\n\n[log]\nROOT_PATH = /var/log/gitea" > "$CONF_DIR/app.ini" && \
-    chown -R "$APP_USER":"$APP_USER" "$CONF_DIR"
-
-# Volumes
-ARG DATA_DIR="/gitea-data"
-ARG LOG_DIR="var/log/gitea"
-ARG PREV_HOME="/var/lib/gitea"
-RUN sed -i "s|$PREV_HOME|$DATA_DIR|" "/etc/passwd" && \
-    rm -r "$PREV_HOME" && \
-    mkdir "$DATA_DIR" && \
-    chown -R "$APP_USER":"$APP_USER" "$DATA_DIR" "$LOG_DIR"
-VOLUME ["$DATA_DIR", "$LOG_DIR"]
-
-#      SSH  HTTP
-EXPOSE 3022 3000
-
-USER "$APP_USER"
-WORKDIR "$DATA_DIR"
-ENV GITEA_WORK_DIR="$DATA_DIR"
-ENTRYPOINT exec /usr/bin/gitea web -c "/etc/gitea/app.ini"
+CMD "sh"

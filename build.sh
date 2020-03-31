@@ -24,23 +24,26 @@ docker build --tag "$APP_NAME" .
 
 if confirm_action "Test image?"; then
 	# Set up temporary directory
-	TMP_DIR=$(mktemp -d "/tmp/$APP_NAME-XXXXXXXXXX")
-	add_cleanup "rm -rf $TMP_DIR"
+	#TMP_DIR=$(mktemp -d "/tmp/$APP_NAME-XXXXXXXXXX")
+	#add_cleanup "rm -rf $TMP_DIR"
 
 	# Apply permissions, UID matches process user
-	extract_var APP_UID "./Dockerfile" "\K\d+"
-	chown -R "$APP_UID":"$APP_UID" "$TMP_DIR"
+	#extract_var APP_UID "./Dockerfile" "\K\d+"
+	#chown -R "$APP_UID":"$APP_UID" "$TMP_DIR"
 
 	# Start the test
-	extract_var CONF_DIR "./Dockerfile" "\"\K[^\"]+"
-	extract_var DATA_DIR "./Dockerfile" "\"\K[^\"]+"
+	#extract_var CONF_DIR "./Dockerfile" "\"\K[^\"]+"
+	#extract_var DATA_DIR "./Dockerfile" "\"\K[^\"]+"
 	docker run \
 	--rm \
 	--interactive \
-	--publish 3022:3022/tcp \
-	--publish 3000:3000/tcp \
-	--mount type=bind,source="$TMP_DIR/app.ini",target="$CONF_DIR/app.ini" \
-	--mount type=bind,source="$TMP_DIR",target="$DATA_DIR" \
+	--publish 8080:8080/tcp \
+	--publish 8443:8443/tcp \
+	--publish 8880:8880/tcp \
+	--publish 8843:8843/tcp \
+	--publish 3478:3478/udp \
+	--publish 6789:6789/tcp \
+	--publish 10001:10001/udp \
 	--mount type=bind,source=/etc/localtime,target=/etc/localtime,readonly \
 	--name "$APP_NAME" \
 	"$APP_NAME"
