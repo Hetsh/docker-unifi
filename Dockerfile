@@ -5,30 +5,28 @@ RUN apt-get update && \
         binutils=2.28-5 \
         libcap2=1:2.25-1 \
         curl=7.52.1-5+deb9u10 \
-        gnupg=2.1.18-8~deb9u4
+        gnupg=2.1.18-8~deb9u4 \
+        logrotate=3.11.0-0.1
 RUN mkdir "/usr/share/man/man1" && \
     apt-get install --yes \
-        openjdk-8-jre-headless=8u242-b08-1~deb9u1 \
+        openjdk-8-jre-headless=8u252-b09-1~deb9u1 \
         jsvc=1.0.15-7
-RUN curl -s -L "https://www.mongodb.org/static/pgp/server-3.4.asc" | apt-key add - && \
+ARG SSL_DEB="libssl.deb"
+RUN curl -s --output "$SSL_DEB" --location "http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u12_amd64.deb" && \
+    dpkg --install "$SSL_DEB" && \
+    rm "$SSL_DEB"
+RUN curl -s --location "https://www.mongodb.org/static/pgp/server-3.6.asc" | apt-key add - && \
     apt-get remove --yes gnupg && \
-    echo "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.4 main" >> /etc/apt/sources.list.d/mongodb-org-3.4.list && \
+    echo "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.6 main" >> /etc/apt/sources.list.d/mongodb-org-3.4.list && \
     apt-get update && \
-    apt-get install --yes \
-        libssl1.0.2=1.0.2u-1~deb9u1 \
-        mongodb-org=3.4.24 \
-        mongodb-org-server=3.4.24 \
-        mongodb-org-shell=3.4.24 \
-        mongodb-org-mongos=3.4.24 \
-        mongodb-org-tools=3.4.24 && \
+    apt-get install --yes mongodb-org=3.6.18 && \
     apt-get autoremove --yes && \
     rm -r /var/lib/apt/lists /var/cache/apt
 
-ARG UNIFI_DIR="/tmp"
 ARG UNIFI_PKG="unifi_sysvinit_all.deb"
-ARG UNIFI_VERSION=5.12.66
-ADD "https://dl.ubnt.com/unifi/$UNIFI_VERSION/$UNIFI_PKG" "$UNIFI_DIR/$UNIFI_PKG"
-RUN dpkg -i "$UNIFI_DIR/$UNIFI_PKG" && \
-    rm "$UNIFI_DIR/$UNIFI_PKG"
+ARG UNIFI_VERSION=5.13.29
+ADD "https://dl.ubnt.com/unifi/$UNIFI_VERSION/$UNIFI_PKG" "$UNIFI_PKG"
+RUN dpkg -i "$UNIFI_PKG" && \
+    rm "$UNIFI_PKG"
 
-CMD "sh"
+ENTRYPOINT [ "sh" ]
