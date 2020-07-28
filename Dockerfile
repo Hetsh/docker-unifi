@@ -4,7 +4,7 @@ RUN apt-get update && \
     apt-get install --yes \
         binutils=2.28-5 \
         libcap2=1:2.25-1 \
-        curl=7.52.1-5+deb9u10 \
+        curl=7.52.1-5+deb9u11 \
         gnupg=2.1.18-8~deb9u4 \
         logrotate=3.11.0-0.1
 RUN mkdir "/usr/share/man/man1" && \
