@@ -21,9 +21,9 @@ A configuration wizard will guide you through the initial setup if you run the s
 ```bash
 STORAGE="/path/to/storage"
 mkdir -p "$STORAGE"
-chown -R 1361:1361 "$STORAGE"
+chown -R 1371:1371 "$STORAGE"
 ```
-`1361` is the numerical id of the user running the server (see Dockerfile).
+`1371` is the numerical id of the user running the server (see Dockerfile).
 The user must have RW access to the storage directory.
 Start the server with the additional mount flags:
 ```bash
