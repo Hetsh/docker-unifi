@@ -14,11 +14,12 @@ ExecStartPre=-/bin/docker create \
               --publish 3478:3478/udp \
               --publish 6789:6789/tcp \
               --publish 10001:10001/udp \
-              --mount type=bind,source=/etc/unifi,target=/etc/unifi \
-              --mount type=bind,source=/etc/localtime,target=/etc/localtime,readonly \
+              --mount type=bind,source=/apps/unifi,target=/unifi \
+              --env TZ='Germany/Berlin' \
+              --env RUNAS_UID0=false \
               hetsh/unifi
 ExecStart=/bin/docker start --attach unifi
-ExecStop=/bin/docker stop unifi
+ExecStop=/bin/docker stop --time 300 unifi
 
 [Install]
 WantedBy=multi-user.target
